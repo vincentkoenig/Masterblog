@@ -15,6 +15,7 @@
             <p><em>Written by {{post.author}}</em></p>
             <p>{{post.content}}</p>
             <button onclick="window.location.href='/delete/{{post.id}}'">Delete</button>
+            <button onclick="window.location.href='/update/{{post.id}}'">Update</button>
         </div>
     {% endfor %}
 </body>
