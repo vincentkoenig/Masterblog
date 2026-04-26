@@ -16,6 +16,8 @@
             <p>{{post.content}}</p>
             <button onclick="window.location.href='/delete/{{post.id}}'">Delete</button>
             <button onclick="window.location.href='/update/{{post.id}}'">Update</button>
+            <button onclick="window.location.href='/like/{{post.id}}'">👍 {{ post.likes }}
+</button>
         </div>
     {% endfor %}
 </body>
