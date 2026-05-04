@@ -4,14 +4,19 @@ app = Flask(__name__)
 
 
 def load_posts():
-    with open("blog_post.json", "r") as fileobj:
-        post = json.load(fileobj)
-        return post
+    try:
+        with open("blog_post.json", "r") as fileobj:
+            post = json.load(fileobj)
+            return post
+    except FileNotFoundError:
+        return []
+    except json.JSONDecodeError:
+        return []
 
 
 def save_posts(posts):
     with open("blog_post.json", "w") as fileobj:
-        json.dump(posts, fileobj)
+        json.dump(posts, fileobj, indent=4)
 
 
 def fetch_post_by_id(post_id):
@@ -32,21 +37,25 @@ def add():
         title = request.form.get("title")
         author = request.form.get("author")
         content = request.form.get("content")
+
+        if not title or not author or not content:
+            return render_template('add.html')
+
         posts = load_posts()
-        new_id = posts[-1]["id"] + 1
+        max_id = max((post["id"] for post in posts), default=0)
+        new_id = max_id + 1
         new_post = {"id": new_id, "title": title, "author": author, "content": content, "likes": 0}
         posts.append(new_post)
         save_posts(posts)
         return redirect(url_for('index'))
+
     return render_template('add.html')
 
-@app.route('/delete/<int:post_id>')
+@app.route('/delete/<int:post_id>', methods=['POST'])
 def delete(post_id):
     posts = load_posts()
-    for post in posts:
-        if post["id"] == post_id:
-            posts.remove(post)
-            save_posts(posts)
+    posts = [post for post in posts if post["id"] != post_id]
+    save_posts(posts)
     return redirect(url_for('index'))
 
 
@@ -60,6 +69,10 @@ def update(post_id):
         title = request.form.get("title")
         author = request.form.get("author")
         content = request.form.get("content")
+
+        if not title or not author or not content:
+            return render_template('update.html', post=post)
+
         posts = load_posts()
         for post in posts:
             if post["id"] == post_id:
@@ -72,7 +85,7 @@ def update(post_id):
     return render_template('update.html', post=post)
 
 
-@app.route('/like/<int:post_id>')
+@app.route('/like/<int:post_id>', methods=['POST'])
 def like(post_id):
     posts = load_posts()
     for post in posts:
